@@ -11,6 +11,11 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import com.facebook.stetho.okhttp3.StethoInterceptor
+import com.squareup.picasso.Picasso
+import okhttp3.OkHttpClient
+
+
 
 
 class PesquisaActivity : AppCompatActivity() {
@@ -20,9 +25,16 @@ class PesquisaActivity : AppCompatActivity() {
         setContentView(R.layout.activity_pesquisa)
 
         btPesquisar.setOnClickListener {
+
+            val okhttp = OkHttpClient.Builder()
+                    .addNetworkInterceptor(StethoInterceptor())
+                    .build();
+
+
             val retrofit = Retrofit.Builder()
                     .baseUrl("https://pokeapi.co")
                     .addConverterFactory(GsonConverterFactory.create())
+                    .client(okhttp)
                     .build()
 
             val api = retrofit.create(PokemonAPI::class.java)
@@ -38,6 +50,12 @@ class PesquisaActivity : AppCompatActivity() {
                             if(response?.isSuccessful == true){
                                 val pokemon = response.body()
                                 tvPokemon.text = pokemon?.nome
+
+                                Picasso.get()
+                                        .load(pokemon?.sprites?.frontDefault)
+                                        .placeholder(R.drawable.pokeball)
+                                        .error(R.drawable.error)
+                                        .into(ivPokemon);
                             }else{
                                 Toast.makeText(this@PesquisaActivity,
                                         "Deu ruim",
